@@ -234,26 +234,26 @@ int main(void)
   IOIF_Init6Axis4(&hi2c4);
 
 
-//  /* For IMU Algorithms */
-//  /* Initial Setting for the IMU */
-//  ATTACH_CASE_SEL_1 = IMU_LEFT_SAGITAL;
-//  ATTACH_CASE_SEL_2 = IMU_RIGHT_SAGITAL;
-//  ATTACH_CASE_SEL_1 = IMU_LEFT_SAGITAL;
-//  ATTACH_CASE_SEL_2 = IMU_RIGHT_SAGITAL;
-//
-//  /* Reset and Initial setting */
-//  ResetDataObj();
-//  InitValueSetting(&imuFuzzyDataObj1, &imuNormDataObj1, &imuGaitDataObj1, &imuThresDataObj1);
-//  InitValueSetting(&imuFuzzyDataObj2, &imuNormDataObj2, &imuGaitDataObj2, &imuThresDataObj2);
-//  InitValueSetting(&imuFuzzyDataObj3, &imuNormDataObj3, &imuGaitDataObj3, &imuThresDataObj3);
-//  InitValueSetting(&imuFuzzyDataObj4, &imuNormDataObj4, &imuGaitDataObj4, &imuThresDataObj4);
-//
-//  /* Get initial angle at Standing state */
-//  GetInitialAngle_IMU1(&mpu6050DataObj1, &imuSensorDataObj1, &imuAngleDataObj1, &imuNormDataObj1, ATTACH_CASE_SEL_1);
-//  GetInitialAngle_IMU2(&mpu6050DataObj2, &imuSensorDataObj2, &imuAngleDataObj2, &imuNormDataObj2, ATTACH_CASE_SEL_2);
-//  GetInitialAngle_IMU3(&mpu6050DataObj3, &imuSensorDataObj3, &imuAngleDataObj3, &imuNormDataObj3, ATTACH_CASE_SEL_3);
-//  GetInitialAngle_IMU4(&mpu6050DataObj4, &imuSensorDataObj4, &imuAngleDataObj4, &imuNormDataObj4, ATTACH_CASE_SEL_4);
-//  /* ------------------------------------------------------------------------------------------------------------------ */
+  /* For IMU Algorithms */
+  /* Initial Setting for the IMU */
+  ATTACH_CASE_SEL_1 = IMU_LEFT_SAGITAL;
+  ATTACH_CASE_SEL_2 = IMU_RIGHT_SAGITAL;
+  ATTACH_CASE_SEL_3 = IMU_LEFT_SAGITAL;
+  ATTACH_CASE_SEL_4 = IMU_RIGHT_SAGITAL;
+
+  /* Reset and Initial setting */
+  ResetDataObj();
+  InitValueSetting(&imuFuzzyDataObj1, &imuNormDataObj1, &imuGaitDataObj1, &imuThresDataObj1);
+  InitValueSetting(&imuFuzzyDataObj2, &imuNormDataObj2, &imuGaitDataObj2, &imuThresDataObj2);
+  InitValueSetting(&imuFuzzyDataObj3, &imuNormDataObj3, &imuGaitDataObj3, &imuThresDataObj3);
+  InitValueSetting(&imuFuzzyDataObj4, &imuNormDataObj4, &imuGaitDataObj4, &imuThresDataObj4);
+
+  /* Get initial angle at Standing state */
+  GetInitialAngle_IMU1(&mpu6050DataObj1, &imuSensorDataObj1, &imuAngleDataObj1, &imuNormDataObj1, ATTACH_CASE_SEL_1);
+  GetInitialAngle_IMU2(&mpu6050DataObj2, &imuSensorDataObj2, &imuAngleDataObj2, &imuNormDataObj2, ATTACH_CASE_SEL_2);
+  GetInitialAngle_IMU3(&mpu6050DataObj3, &imuSensorDataObj3, &imuAngleDataObj3, &imuNormDataObj3, ATTACH_CASE_SEL_3);
+  GetInitialAngle_IMU4(&mpu6050DataObj4, &imuSensorDataObj4, &imuAngleDataObj4, &imuNormDataObj4, ATTACH_CASE_SEL_4);
+  /* ------------------------------------------------------------------------------------------------------------------ */
 
   /* Start the TIMER INTERRUPT */
   HAL_TIM_Base_Start_IT(&htim2);
@@ -347,8 +347,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 
 		/* Choose the Function you want to RUN */
-		RunIMU();
-//		RunTotalIMUAlgorithm();
+//		RunIMU();
+		RunTotalIMUAlgorithm();
 		/* ----------------------------------- */
 
 		if (msTime == 1000){
@@ -675,7 +675,6 @@ static int RunIMU(void)
 	err3 = IOIF_Get6AxisValue3(&mpu6050DataObj3);
 	us_Delay(200);
 	err4 = IOIF_Get6AxisValue4(&mpu6050DataObj4);
-	us_Delay(200);
 
 
 	if (err1 != 0){
@@ -702,8 +701,11 @@ static int RunTotalIMUAlgorithm(void)
 	IMU_UpdateBuffer(&imuSensorDataObj4, &imuAngleDataObj4, &imuGaitDataObj4, &imuNormDataObj4);
 
 	err1 = IOIF_Get6AxisValue1(&mpu6050DataObj1);
+	us_Delay(200);
 	err2 = IOIF_Get6AxisValue2(&mpu6050DataObj2);
+	us_Delay(200);
 	err3 = IOIF_Get6AxisValue3(&mpu6050DataObj3);
+	us_Delay(200);
 	err4 = IOIF_Get6AxisValue4(&mpu6050DataObj4);
 
 	if (err1 != 0){
