@@ -78,6 +78,7 @@ static void RunTvcfFilter(IMU_SensorData_t* imuSensorData, IMU_AngleData_t* imuA
 static void SetUsedDegVel(IMU_AngleData_t* imuAngleData);
 static int RunIMU(void);
 static int RunTotalIMUAlgorithm(void);
+void us_Delay(uint32_t us_delay);
 
 
 /* USER CODE END PFP */
@@ -216,9 +217,6 @@ int main(void)
   MX_I2C4_Init();
   MX_ETH_Init();
   MX_I2C3_Init();
-  MX_TIM15_Init();
-  MX_TIM1_Init();
-  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
   CoreDebug->DEMCR &= ~CoreDebug_DEMCR_TRCENA_Msk;
@@ -234,6 +232,7 @@ int main(void)
   IOIF_Init6Axis2(&hi2c2);
   IOIF_Init6Axis3(&hi2c3);
   IOIF_Init6Axis4(&hi2c4);
+
 
 //  /* For IMU Algorithms */
 //  /* Initial Setting for the IMU */
@@ -257,10 +256,7 @@ int main(void)
 //  /* ------------------------------------------------------------------------------------------------------------------ */
 
   /* Start the TIMER INTERRUPT */
-  HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_Base_Start_IT(&htim2);
-  HAL_TIM_Base_Start_IT(&htim3);
-  HAL_TIM_Base_Start_IT(&htim15);
 
   /* USER CODE END 2 */
 
@@ -290,23 +286,27 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+  while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
+
+  __HAL_RCC_SYSCFG_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
   while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-  RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 1;
-  RCC_OscInitStruct.PLL.PLLN = 24;
+  RCC_OscInitStruct.PLL.PLLN = 120;
   RCC_OscInitStruct.PLL.PLLP = 2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLQ = 15;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
@@ -321,15 +321,15 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
                               |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV1;
-  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -340,54 +340,28 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 
-	if (htim->Instance == htim1.Instance){
-		err1 = IOIF_Get6AxisValue1(&mpu6050DataObj1);
-		if (err1 != 0){
-			errSum1++;
-		}
-	}
-
 	if (htim->Instance == htim2.Instance){
-//		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-//		DWT->CYCCNT = 0;
-//		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-//
-//
-//		/* Choose the Function you want to RUN */
-//		RunIMU();
-////		RunTotalIMUAlgorithm();
-//		/* ----------------------------------- */
-//
-//		if (msTime == 1000){
-//			msTime = 0;
-//			totalElapsedTime++;
-//		}
-//
-//		/* Code End */
-//		codeTime = DWT->CYCCNT/64;
-//		msTime++;
-//
-//		if (codeTime > 1000){
-//			breakRT++;
-//		}
+		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+		DWT->CYCCNT = 0;
+		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
-		err2 = IOIF_Get6AxisValue2(&mpu6050DataObj2);
-		if (err2 != 0){
-			errSum2++;
+
+		/* Choose the Function you want to RUN */
+		RunIMU();
+//		RunTotalIMUAlgorithm();
+		/* ----------------------------------- */
+
+		if (msTime == 1000){
+			msTime = 0;
+			totalElapsedTime++;
 		}
-	}
 
-	if (htim->Instance == htim3.Instance){
-		err3 = IOIF_Get6AxisValue3(&mpu6050DataObj3);
-		if (err3 != 0){
-			errSum3++;
-		}
-	}
+		/* Code End */
+		codeTime = DWT->CYCCNT/480;
+		msTime++;
 
-	if (htim->Instance == htim15.Instance){
-		err4 = IOIF_Get6AxisValue4(&mpu6050DataObj4);
-		if (err4 != 0){
-			errSum4++;
+		if (codeTime > 1000){
+			breakRT++;
 		}
 	}
 }
@@ -695,13 +669,14 @@ static void SetUsedDegVel(IMU_AngleData_t* imuAngleData)
 static int RunIMU(void)
 {
 	err1 = IOIF_Get6AxisValue1(&mpu6050DataObj1);
-	HAL_Delay(0);
+	us_Delay(200);
 	err2 = IOIF_Get6AxisValue2(&mpu6050DataObj2);
-	HAL_Delay(0);
+	us_Delay(200);
 	err3 = IOIF_Get6AxisValue3(&mpu6050DataObj3);
-	HAL_Delay(0);
+	us_Delay(200);
 	err4 = IOIF_Get6AxisValue4(&mpu6050DataObj4);
-	HAL_Delay(0);
+	us_Delay(200);
+
 
 	if (err1 != 0){
 		errSum1++;
@@ -773,6 +748,17 @@ static int RunTotalIMUAlgorithm(void)
 	return 0;
 }
 
+
+
+void us_Delay(uint32_t us_delay)
+{
+  uint32_t tickstart = DWT->CYCCNT/480;
+  uint32_t wait = us_delay;
+
+  while ((DWT->CYCCNT/480 - tickstart) < wait)
+  {
+  }
+}
 
 /* USER CODE END 4 */
 
