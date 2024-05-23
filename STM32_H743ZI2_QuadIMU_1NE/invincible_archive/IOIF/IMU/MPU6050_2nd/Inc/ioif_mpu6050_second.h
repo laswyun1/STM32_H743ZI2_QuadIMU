@@ -38,7 +38,7 @@
  * @brief Directives and macros for readability and efficiency.
  */
 
-#define IOIF_MPU6050_SECOND_BUFF_SIZE        32
+#define IOIF_MPU6050_SECOND_BUFF_SIZE        16
 
 #define IOIF_MPU6050_SECOND_TRIALS           10
 #define IOIF_MPU6050_SECOND_STRAT_UP_DELAY   10

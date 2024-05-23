@@ -160,7 +160,7 @@ SECTIONS
 
     /* Four MPU6050 */
     *(.i2c1RxBuff)
-    *(.i2c4RxBuff)
+    *(.i2c2RxBuff)
   	*(.i2c3RxBuff)
 
   } >RAM_D2
@@ -171,7 +171,7 @@ SECTIONS
   	. = ABSOLUTE(0x38000000);
 
     /* Fourth MPU6050 */
-    *(.i2c2RxBuff)
+    *(.i2c4RxBuff)
 
   } >RAM_D3
   /********************************************************************/
