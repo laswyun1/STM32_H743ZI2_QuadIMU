@@ -319,20 +319,6 @@ void I2C4_EV_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles DMAMUX2 overrun interrupt.
-  */
-void DMAMUX2_OVR_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMAMUX2_OVR_IRQn 0 */
-
-  /* USER CODE END DMAMUX2_OVR_IRQn 0 */
-
-  /* USER CODE BEGIN DMAMUX2_OVR_IRQn 1 */
-
-  /* USER CODE END DMAMUX2_OVR_IRQn 1 */
-}
-
-/**
   * @brief This function handles BDMA channel0 global interrupt.
   */
 void BDMA_Channel0_IRQHandler(void)

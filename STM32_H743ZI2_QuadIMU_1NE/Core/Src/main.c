@@ -675,6 +675,7 @@ static int RunIMU(void)
 	err3 = IOIF_Get6AxisValue3(&mpu6050DataObj3);
 	us_Delay(200);
 	err4 = IOIF_Get6AxisValue4(&mpu6050DataObj4);
+	us_Delay(200);
 
 
 	if (err1 != 0){
@@ -707,6 +708,7 @@ static int RunTotalIMUAlgorithm(void)
 	err3 = IOIF_Get6AxisValue3(&mpu6050DataObj3);
 	us_Delay(200);
 	err4 = IOIF_Get6AxisValue4(&mpu6050DataObj4);
+	us_Delay(200);
 
 	if (err1 != 0){
 		errSum1++;
