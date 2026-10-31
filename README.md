@@ -1,0 +1,1 @@
+STM32 - H743ZI2 + 4 MPU6050 IMUs reading
